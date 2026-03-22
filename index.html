@@ -1,0 +1,388 @@
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora TESJUA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700&display=swap');
+ 
+    :root {
+      --bg: #0d0d0d;
+      --panel: #1a1a1a;
+      --border: #2e2e2e;
+      --green: #00ff88;
+      --green-dim: #00cc66;
+      --red: #ff4455;
+      --text: #e0e0e0;
+      --dim: #555;
+    }
+ 
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    body {
+      background: var(--bg);
+      font-family: 'Share Tech Mono', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: var(--text);
+    }
+ 
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.4rem;
+      color: var(--green);
+      letter-spacing: 6px;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px var(--green);
+    }
+ 
+    .calc {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      width: 340px;
+      box-shadow: 0 0 40px rgba(0,255,136,0.05);
+    }
+ 
+    /* PANTALLA */
+    .screen {
+      background: #111;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+ 
+    .screen-expr {
+      font-size: 0.8rem;
+      color: var(--dim);
+      min-height: 18px;
+      text-align: right;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+ 
+    .screen-main {
+      font-size: 1.8rem;
+      color: var(--green);
+      text-align: right;
+      text-shadow: 0 0 8px var(--green);
+      min-height: 40px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+ 
+    .screen-main.error {
+      color: var(--red);
+      font-size: 1rem;
+      text-shadow: none;
+    }
+ 
+    /* BOTONES */
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+ 
+    button {
+      background: #222;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.1rem;
+      padding: 16px 0;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    }
+ 
+    button:hover {
+      background: #2a2a2a;
+      box-shadow: 0 0 8px rgba(0,255,136,0.15);
+    }
+ 
+    button:active {
+      transform: scale(0.94);
+      background: #333;
+    }
+ 
+    button.op {
+      color: var(--green);
+      border-color: #1a3d2b;
+      background: #0e2018;
+    }
+ 
+    button.op:hover {
+      background: #152d22;
+      box-shadow: 0 0 10px rgba(0,255,136,0.25);
+    }
+ 
+    button.equals {
+      background: var(--green);
+      color: #000;
+      font-weight: bold;
+      border: none;
+      grid-column: span 2;
+    }
+ 
+    button.equals:hover {
+      background: var(--green-dim);
+      box-shadow: 0 0 14px rgba(0,255,136,0.4);
+    }
+ 
+    button.clear {
+      color: var(--red);
+      border-color: #3d1a1a;
+      background: #200e0e;
+    }
+ 
+    button.clear:hover {
+      background: #2d1111;
+      box-shadow: 0 0 10px rgba(255,68,85,0.2);
+    }
+ 
+    button.paren {
+      color: #88ccff;
+      border-color: #1a2a3d;
+      background: #0e1820;
+    }
+ 
+    /* HISTORIAL */
+    .history-title {
+      font-size: 0.7rem;
+      color: var(--dim);
+      letter-spacing: 3px;
+      margin: 20px 0 8px;
+      text-align: center;
+    }
+ 
+    .history {
+      background: #111;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      max-height: 120px;
+      overflow-y: auto;
+      font-size: 0.78rem;
+    }
+ 
+    .history:empty::before {
+      content: 'Sin operaciones aún';
+      color: var(--dim);
+    }
+ 
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px solid #1e1e1e;
+      color: #888;
+    }
+ 
+    .history-item:last-child { border-bottom: none; }
+    .history-item span { color: var(--green); }
+ 
+    .history::-webkit-scrollbar { width: 4px; }
+    .history::-webkit-scrollbar-track { background: transparent; }
+    .history::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+ 
+    footer {
+      margin-top: 20px;
+      font-size: 0.65rem;
+      color: var(--dim);
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+ 
+  <h1>TESJUA</h1>
+ 
+  <div class="calc">
+    <!-- Pantalla -->
+    <div class="screen">
+      <div class="screen-expr" id="expresion"></div>
+      <div class="screen-main" id="pantalla">0</div>
+    </div>
+ 
+    <!-- Botones -->
+    <div class="buttons">
+      <!-- Fila 1 -->
+      <button class="clear" onclick="limpiar()">C</button>
+      <button class="paren" onclick="agregar('(')">(</button>
+      <button class="paren" onclick="agregar(')')">)</button>
+      <button class="op" onclick="agregar('/')">÷</button>
+ 
+      <!-- Fila 2 -->
+      <button onclick="agregar('7')">7</button>
+      <button onclick="agregar('8')">8</button>
+      <button onclick="agregar('9')">9</button>
+      <button class="op" onclick="agregar('*')">×</button>
+ 
+      <!-- Fila 3 -->
+      <button onclick="agregar('4')">4</button>
+      <button onclick="agregar('5')">5</button>
+      <button onclick="agregar('6')">6</button>
+      <button class="op" onclick="agregar('-')">−</button>
+ 
+      <!-- Fila 4 -->
+      <button onclick="agregar('1')">1</button>
+      <button onclick="agregar('2')">2</button>
+      <button onclick="agregar('3')">3</button>
+      <button class="op" onclick="agregar('+')">+</button>
+ 
+      <!-- Fila 5 -->
+      <button onclick="agregar('0')">0</button>
+      <button onclick="agregar('.')">.</button>
+      <button class="equals" onclick="calcular()">=</button>
+    </div>
+ 
+    <!-- Historial -->
+    <p class="history-title">— HISTORIAL —</p>
+    <div class="history" id="historial"></div>
+  </div>
+ 
+  <footer>CALCULADORA TESJUA &nbsp;|&nbsp; JS + HTML</footer>
+ 
+  <script>
+    let expresion = "";
+ 
+    // Agrega un carácter a la expresión
+    function agregar(valor) {
+      if (expresion === "0" && valor !== "." && !isNaN(valor)) {
+        expresion = valor;
+      } else {
+        expresion += valor;
+      }
+      actualizarPantalla();
+    }
+ 
+    // Limpia todo
+    function limpiar() {
+      expresion = "";
+      document.getElementById("pantalla").className = "screen-main";
+      document.getElementById("pantalla").innerText = "0";
+      document.getElementById("expresion").innerText = "";
+    }
+ 
+    // Actualiza la pantalla con la expresión actual
+    function actualizarPantalla() {
+      let display = expresion
+        .replace(/\*/g, "×")
+        .replace(/\//g, "÷");
+      document.getElementById("pantalla").innerText = display || "0";
+      document.getElementById("pantalla").className = "screen-main";
+    }
+ 
+    // Calcula el resultado
+    function calcular() {
+      if (!expresion) return;
+ 
+      // Valida paréntesis balanceados
+      if (!parentesisBalanceados(expresion)) {
+        mostrarError("Paréntesis incompletos");
+        return;
+      }
+ 
+      // Valida niveles de anidación (hasta 3)
+      if (nivelMaximo(expresion) > 3) {
+        mostrarError("Máx. 3 niveles de paréntesis");
+        return;
+      }
+ 
+      try {
+        let resultado = evaluarExpresion(expresion);
+ 
+        // Mostrar expresión arriba y resultado abajo
+        let exprDisplay = expresion.replace(/\*/g, "×").replace(/\//g, "÷");
+        document.getElementById("expresion").innerText = exprDisplay + " =";
+        document.getElementById("pantalla").innerText = resultado;
+        document.getElementById("pantalla").className = "screen-main";
+ 
+        // Guardar en historial
+        agregarHistorial(exprDisplay, resultado);
+ 
+        // La expresión siguiente parte del resultado
+        expresion = String(resultado);
+ 
+      } catch (e) {
+        mostrarError("Expresión inválida");
+      }
+    }
+ 
+    // Muestra error en pantalla
+    function mostrarError(msg) {
+      document.getElementById("pantalla").innerText = msg;
+      document.getElementById("pantalla").className = "screen-main error";
+      expresion = "";
+    }
+ 
+    // Verifica que los paréntesis estén balanceados
+    function parentesisBalanceados(expr) {
+      let contador = 0;
+      for (let c of expr) {
+        if (c === "(") contador++;
+        if (c === ")") contador--;
+        if (contador < 0) return false;
+      }
+      return contador === 0;
+    }
+ 
+    // Calcula el nivel máximo de anidación de paréntesis
+    function nivelMaximo(expr) {
+      let nivel = 0, max = 0;
+      for (let c of expr) {
+        if (c === "(") { nivel++; if (nivel > max) max = nivel; }
+        if (c === ")") nivel--;
+      }
+      return max;
+    }
+ 
+    // Evalúa la expresión matemática de forma segura
+    function evaluarExpresion(expr) {
+      // Solo permite números, operadores y paréntesis
+      if (!/^[0-9+\-*/().\s]+$/.test(expr)) {
+        throw new Error("Expresión inválida");
+      }
+      let resultado = Function('"use strict"; return (' + expr + ')')();
+      if (!isFinite(resultado)) throw new Error("División por cero");
+      // Redondear para evitar errores de punto flotante
+      return parseFloat(resultado.toFixed(10));
+    }
+ 
+    // Agrega una entrada al historial
+    function agregarHistorial(expr, resultado) {
+      let historial = document.getElementById("historial");
+      let item = document.createElement("div");
+      item.className = "history-item";
+      item.innerHTML = expr + " = <span>" + resultado + "</span>";
+      historial.prepend(item);
+    }
+ 
+    // Teclas del teclado
+    document.addEventListener("keydown", function(e) {
+      if (e.key >= "0" && e.key <= "9") agregar(e.key);
+      else if (e.key === "+") agregar("+");
+      else if (e.key === "-") agregar("-");
+      else if (e.key === "*") agregar("*");
+      else if (e.key === "/") { e.preventDefault(); agregar("/"); }
+      else if (e.key === "(") agregar("(");
+      else if (e.key === ")") agregar(")");
+      else if (e.key === ".") agregar(".");
+      else if (e.key === "Enter") calcular();
+      else if (e.key === "Escape") limpiar();
+      else if (e.key === "Backspace") {
+        expresion = expresion.slice(0, -1);
+        actualizarPantalla();
+      }
+    });
+  </script>
+</body>
+</html>
